@@ -1,18 +1,18 @@
 import express from "express";
 import cors from "cors";
-
+import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-// Middleware
+//  middleware setup
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/",function(req,res){
-    res.send("backend is live server")
-})
-// Routes
+
+//  auth routes
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
 export default app;
