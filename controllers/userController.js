@@ -1,41 +1,77 @@
-import User from "../models/User.models.js";
+import User from "../models/User.model.js";
+import Otp from "../models/otp.model.js";
 
-// Create User
-export const createUser = async (req, res) => {
+// generate 6-digit OTP
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
+/* ================= SEND OTP ================= */
+export const sendOtp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { email } = req.body;
 
-    const user = await User.create({
-      name,
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const otp = generateOTP();
+
+    await Otp.create({
       email,
-      password,
+      otp,
+      purpose: "LOGIN",
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      user,
+      message: "OTP generated and stored successfully",
+      otp, // ⚠️ REMOVE THIS IN PRODUCTION
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get All Users
-export const getUsers = async (req, res) => {
+
+/* ================= VERIFY OTP ================= */
+export const verifyOtp = async (req, res) => {
   try {
-    const users = await User.find();
+    const { email, otp } = req.body;
+
+    const otpRecord = await Otp.findOne({
+      email,
+      otp,
+      purpose: "LOGIN",
+      isUsed: false,
+    });
+
+    if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    otpRecord.isUsed = true;
+    await otpRecord.save();
+
+    await User.updateOne({ email }, { isVerified: true });
 
     res.json({
       success: true,
-      users,
+      message: "OTP verified successfully",
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
