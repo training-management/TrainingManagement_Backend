@@ -1,9 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
-
-dotenv.config();
+import authRoutes from "./routes/authRoutes.js";
+import connectDB from "./config/db.js";
 
 const app = express();
 
@@ -11,7 +12,9 @@ app.use(express.json());
 connectDB();
 
 // routes
-app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
+
+app.use("/api/auth", authRoutes);
 
 // test route
 app.get("/", (req, res) => {
