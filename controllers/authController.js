@@ -1,4 +1,4 @@
-import User from "../models/User.models.js";
+import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -48,6 +48,7 @@ export const signup = async (req, res) => {
 // ================= LOGIN =================
 export const login = async (req, res) => {
   try {
+    console.log("login started");
     const { email, password } = req.body;
     console.log(req.body);
 
