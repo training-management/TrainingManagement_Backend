@@ -5,14 +5,18 @@ import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-//  middleware setup
+// middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-//  auth routes
+// routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+
+// test route
+app.get("/", (req, res) => {
+  res.send("Training Management Backend is running 🚀");
+});
 
 export default app;
